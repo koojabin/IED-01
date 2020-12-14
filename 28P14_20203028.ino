@@ -1,3 +1,4 @@
+
 #include <Servo.h>
 
 /////////////////////////////
@@ -18,14 +19,14 @@
 #define _DIST_ALPHA 0.1   //[3023] EMA 가중치
 
 // Servo range 
-#define _DUTY_MIN 1200                 //[3028] 서보 각도 최소값
-#define _DUTY_NEU 1400    //[3038] 레일 수평 서보 펄스폭
-#define _DUTY_MAX 1600    //[3031] 서보 최대값
+#define _DUTY_MIN 1180                 //[3028] 서보 각도 최소값
+#define _DUTY_NEU 1480    //[3038] 레일 수평 서보 펄스폭
+#define _DUTY_MAX 1780    //[3031] 서보 최대값
 
 // Servo speed control
 #define _SERVO_ANGLE 30   //[3030] servo angle limit 실제 서보의 동작크기
           //[3023] 서보모터의 작동 범위(단위 : degree)
-#define _SERVO_SPEED 100            // [3040] 서보의 각속도(초당 각도 변화량)
+#define _SERVO_SPEED 100          // [3040] 서보의 각속도(초당 각도 변화량)
 
 // Event periods
 #define _INTERVAL_DIST 20   //[3039]적외선 센서 측정 간격
@@ -35,11 +36,11 @@
 // PID parameters
 #define _KP 1.7     //[3039] 비례 제어의 상수 값
 #define _KD 90
-#define _KI 0.03
+#define _KI 0.1
 
 #define DELAY_MICROS  1500 // 필터에 넣을 샘플값을 측정하는 딜레이(고정값!)
 #define EMA_ALPHA 0.35     // EMA 필터 값을 결정하는 ALPHA 값. 작성자가 생각하는 최적값임.
-
+#define _ITERM_MAX 100.0
 
 // Servo instance     //[3046]서보간격
 Servo myservo;
@@ -58,19 +59,18 @@ bool event_dist, event_servo, event_serial; //[3023] 적외선센서의 거리�
 // Servo speed control
 int duty_chg_per_interval;  //[3039] interval 당 servo의 돌아가는 최대 정도
 int duty_target, duty_curr;      //[3030]servo 목표 위치, servo 현재 위치
-int duty_neutral = 1320;
+int duty_neutral = 1350;
 
 int a=75,b=360;
 // PID variables
-float error_curr, error_prev, control, pterm, dterm, iterm; 
+float error_curr, error_prev, control, pterm, dterm, iterm = 0; 
 
 
 void setup() {
-iterm = 0;
 // initialize GPIO pins for LED and attach servo 
 pinMode(PIN_LED,OUTPUT);           //[3030]LED를 연결[3027]
 myservo.attach(PIN_SERVO);  //[3039]servo를 연결
-
+iterm = 0;
 // initialize global variables
 dist_min = _DIST_MIN; //[3030] 측정값의 최소값
 dist_max= _DIST_MAX; //[3032] 측정값의 최대값
@@ -113,7 +113,10 @@ void loop()
     error_curr = dist_target - dist_ema; 
     pterm =  _KP*error_curr;
     dterm = _KD*(error_curr - error_prev);
-    iterm = _KI * error_curr;
+    iterm += _KI * error_curr;
+    if(abs(iterm) > _ITERM_MAX) {
+      iterm = 0;
+    }
     control = dterm + pterm + iterm;
     duty_target = _DUTY_NEU + control;
     if (duty_target > _DUTY_MAX) 
