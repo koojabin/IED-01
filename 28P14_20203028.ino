@@ -66,6 +66,7 @@ float error_curr, error_prev, control, pterm, dterm, iterm;
 
 
 void setup() {
+iterm = 0;
 // initialize GPIO pins for LED and attach servo 
 pinMode(PIN_LED,OUTPUT);           //[3030]LED를 연결[3027]
 myservo.attach(PIN_SERVO);  //[3039]servo를 연결
