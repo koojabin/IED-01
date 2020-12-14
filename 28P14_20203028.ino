@@ -34,8 +34,8 @@
 
 // PID parameters
 #define _KP 1.7     //[3039] 비례 제어의 상수 값
-#define _KD 100
-#define _KI 0.01
+#define _KD 90
+#define _KI 0.03
 
 #define DELAY_MICROS  1500 // 필터에 넣을 샘플값을 측정하는 딜레이(고정값!)
 #define EMA_ALPHA 0.35     // EMA 필터 값을 결정하는 ALPHA 값. 작성자가 생각하는 최적값임.
